@@ -1,3 +1,5 @@
+var path = require('path');
+
 module.exports = {
   module: {
     rules: [
@@ -9,6 +11,10 @@ module.exports = {
         }
       }
     ]
+  },
+  output: {
+    filename: 'bundle.js',
+    path: path.resolve('/tmp/')
   }
 };
 
