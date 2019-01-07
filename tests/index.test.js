@@ -1,6 +1,9 @@
+var fs = require('fs')
+
 const lambda = require('../index');
 test('check handler', () => {
 
+ fs.unlinkSync("/tmp/bundle.js");
   let event={};
   let context={};
 
