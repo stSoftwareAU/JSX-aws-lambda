@@ -12,9 +12,13 @@ module.exports = {
       }
     ]
   },
+  resolve: {
+    alias: {
+      src: '/tmp/src/'
+    }
+  }
   output: {
     filename: 'bundle.js',
     path: path.resolve('/tmp/')
   }
 };
-

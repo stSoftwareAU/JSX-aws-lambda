@@ -1,10 +1,15 @@
+import event from "./event.js";
+
 var fs = require('fs')
 
 const lambda = require('../index');
 test('check handler', () => {
+  const fn="/tmp/bundle.js";
+  if( fs.existsSync(fn))
+  {
+    fs.unlinkSync(fn);
+  }
 
- fs.unlinkSync("/tmp/bundle.js");
-  let event={};
   let context={};
 
   let promise=new Promise( function( reslove, reject){
@@ -12,19 +17,28 @@ test('check handler', () => {
       {
          if( failed)
          {
-             reject( failed);
+           reject( failed);
+           console.warn( "failed: " + failed);
          }
          else
          {
-             reslove( success);
+           reslove( success);
          }
       };
-      lambda.handler(event,context,callback);
+      try{
+        lambda.handler(event,context,callback);
+      }
+      catch( e){
+        console.warn( "reject: " + e);
+        reject( e);
+      }
+
   });
 
-  promise.then( function( result){
-      expect(result).toMatch(/!function/m);
-  }).catch( error => fail( error));
+  promise.then(
+    result =>
+      expect(result).toMatch(/!function/m)
+  ).catch( error => fail( error));
+
+  console.log( "completed");
 });
-
-
