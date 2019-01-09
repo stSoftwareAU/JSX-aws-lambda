@@ -1,3 +1,0 @@
-{
-   "script":"import React from \"react\";\nimport ReactDOM from \"react-dom\";\nfunction myFunction(x, y = 10) {\n // y is 10 if not passed or undefined\n return x + y;\n}\nmyFunction(5); // will return 15\nconst name = 'Josh Perez';\nconst element = <h1>Hello, {name}</h1>;\n\nReactDOM.render(\n element,\n document.getElementById('root')\n);\n"
-}

@@ -1,7 +1,7 @@
 var fs = require('fs');
 
 const lambda = require('../index');
-const event_data = require( './event.json');
+
 test('check handler', () => {
   const fn="/tmp/dist/bundle.js";
   if( fs.existsSync(fn))
@@ -9,6 +9,13 @@ test('check handler', () => {
     fs.unlinkSync(fn);
   }
   //const event=JSON.parse(fs.readFileSync('event.json', 'utf8'));
+  let event_data={
+      script: fs.readFileSync('./sample/index.js', 'utf8'),
+      packages:[
+        {"react-select":"2.2.0"}
+      ]
+  };
+  console.info( JSON.stringify(event_data,null, 2));
 
   let context={};
 
