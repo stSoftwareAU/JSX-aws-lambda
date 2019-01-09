@@ -20,12 +20,12 @@ module.exports = {
 
   resolve: {
     alias: {
-      "./src": '/tmp/src'
+      "./src": '/tmp/wd/src'
     },
     modules: [path.resolve(__dirname, 'node_modules')]
   },
   output: {
     filename: 'bundle.js',
-    path: path.resolve('/tmp/dist')
+    path: path.resolve('/tmp/wd/dist')
   }
 };

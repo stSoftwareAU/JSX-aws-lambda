@@ -11,9 +11,9 @@ test('check handler', () => {
   //const event=JSON.parse(fs.readFileSync('event.json', 'utf8'));
   let event_data={
       script: fs.readFileSync('./sample/index.js', 'utf8'),
-      packages:[
-        {"react-select":"2.2.0"}
-      ]
+      devDependencies:{
+        "react-select":"2.2.0"
+      }
   };
   console.info( JSON.stringify(event_data,null, 2));
 
