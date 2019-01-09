@@ -1,9 +1,9 @@
 var fs = require('fs');
 
 const lambda = require('../index');
-var event_data = require( './event.json');
+const event_data = require( './event.json');
 test('check handler', () => {
-  const fn="/tmp/bundle.js";
+  const fn="/tmp/dist/bundle.js";
   if( fs.existsSync(fn))
   {
     fs.unlinkSync(fn);
@@ -18,7 +18,7 @@ test('check handler', () => {
          if( failed)
          {
            reject( failed);
-           console.warn( "failed: " + failed);
+           console.error( "failed: " + failed);
          }
          else
          {
