@@ -1,14 +1,14 @@
-import event from "./event.js";
-
-var fs = require('fs')
+var fs = require('fs');
 
 const lambda = require('../index');
+var event_data = require( './event.json');
 test('check handler', () => {
   const fn="/tmp/bundle.js";
   if( fs.existsSync(fn))
   {
     fs.unlinkSync(fn);
   }
+  //const event=JSON.parse(fs.readFileSync('event.json', 'utf8'));
 
   let context={};
 
@@ -26,7 +26,7 @@ test('check handler', () => {
          }
       };
       try{
-        lambda.handler(event,context,callback);
+        lambda.handler(event_data,context,callback);
       }
       catch( e){
         console.warn( "reject: " + e);

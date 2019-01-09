@@ -27,7 +27,7 @@ exports.handler = (event, context, callback) => {
   }
   else {
     fs.mkdirSync(srcDir);
-    fs.appendFileSync(srcDir + 'index.js', event.script);
+    fs.appendFileSync(srcDir + '/index.js', event.script);
     //var wp = spawn('./node_modules/.bin/webpack', ['--config', 'webpack.config.js', '--mode', 'production']);
     var wp = spawn('npm', ['run-script', 'build']);
     //var wp = spawn('pwd');

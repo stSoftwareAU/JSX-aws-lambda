@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "jest",
-    "build": "webpack --mode production"
+    "build": "webpack --mode production",
+    "build-test": "cp -r sample /tmp/src &&webpack --mode production"
   },
   "author": "",
   "license": "ISC",
