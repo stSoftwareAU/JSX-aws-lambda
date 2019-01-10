@@ -22,7 +22,7 @@ module.exports = {
     alias: {
       "./src": '/tmp/wd/src'
     },
-    modules: [path.resolve(__dirname, 'node_modules')]
+    modules: ['/tmp/wd/node_modules']
   },
   output: {
     filename: 'bundle.js',

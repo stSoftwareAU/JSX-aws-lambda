@@ -2,85 +2,197 @@ var exec = require('child_process').exec;
 var cp = require('child_process');
 var fs = require('fs')
 var path = require('path');
+const wdDir="/tmp/wd";
 
 exports.handler = (event, context, callback) => {
-  /* Set to false to send the response right away when the callback executes*/
-  context.callbackWaitsForEmptyEventLoop=false;
-  const wdDir="/tmp/wd";
-  deleteFolderRecursive( wdDir);
-  const srcDir=wdDir+"/src";
-  const distDir =wdDir+"/dist";
-  const outFile=distDir + "/bundle.js";
 
   if( ! event.script )
   {
     callback("missing script");
   }
-  else {
-    cp.spawnSync( "cp",["-a", "./", wdDir]);
 
-    if( event.devDependencies)
+  if( fs.existsSync( wdDir)==false)
+  {
+    console.info( "create: " + wdDir);
+    fs.mkdirSync(wdDir);
+  }
+
+  const lockFile=wdDir+"/lockFile";
+
+  var lockPromise = new Promise( function(resolve, reject) {
+    if( lock( lockFile))
     {
-      const packageJSON=JSON.parse(fs.readFileSync(wdDir +'/package.json', 'utf8'));
-      console.info( JSON.stringify( packageJSON, null, 2));
-      packageJSON.devDependencies=Object.assign( packageJSON.devDependencies,event.devDependencies);
-      //console.info( JSON.stringify( packageJSON, null, 2));
-      fs.writeFileSync( wdDir +'/package.json', JSON.stringify(packageJSON,null, 2));
-      cp.spawnSync(
-        "npm",
-        ["install"],{
-          cwd:wdDir
-        }
-      );
+      resolve('locked');
     }
-
-    fs.mkdirSync(srcDir);
-    fs.appendFileSync(srcDir + '/index.js', event.script);
-    //var wp = spawn('./node_modules/.bin/webpack', ['--config', 'webpack.config.js', '--mode', 'production']);
-  //  var wp = spawn('npm', ['run-script', 'build']);
-    var wp = exec(
-      'npm run-script build',
-      {
-          cwd:wdDir
-      },
-      (error, stdout, stderr) => {
-        if (error && error.signal) {
-          var msg='[ERROR]: "' + error.name + '{' + error.signal + '}'+ '" - ' + error.message + '\n' + stderr;
-          msg=msg.trim();
-          console.error( msg );
-          callback(msg);
-          return;
-        }
-
-        if( fs.existsSync( outFile))
+    else{
+      var lockInterval = setInterval(
+        function()
         {
-          try{
-            callback(
-              null,
-              fs.readFileSync(outFile, 'utf8')
-            );
-          }
-          catch( e)
+          if( lock(lockFile))
           {
-            callback( "could not read: " + e);
+            resolve( "locked");
+            clearInterval(lockInterval);
           }
+        },
+        100
+      );
+
+    }
+  });
+
+  lockPromise
+    .then( perform(event, context, callback)).then( () =>fs.unlinkSync(lockFile))
+    .catch( function(err){fs.unlinkSync(lockFile);throw err});
+}
+function lock( filename)
+{
+  try{
+    fs.writeFileSync(filename, "locked");
+    return true;
+  }
+  catch( e)
+  {
+    console.info( "can't lock: " + filename);
+    fs.stat( filename, function( err, stat ) {
+        if ( err ) return console.error( err );
+        var livesUntil = new Date();
+        livesUntil.setHours(livesUntil.getHours() - 1);
+        if ( stat.ctime < livesUntil ) {
+            fs.unlink( filename, function( err ) {
+                if ( err ) return console.error( err );
+            });
         }
-        else {
-          callback( "No file: " + outFile);
+    });
+
+    return false;
+  }
+}
+function perform(event, context, callback)
+{
+  const srcDir=wdDir+"/src";
+  const distDir =wdDir+"/dist";
+  deleteFolderRecursive( srcDir);
+  deleteFolderRecursive( distDir);
+  const outFile=distDir + "/bundle.js";
+
+  cp.spawnSync( "cp",["-a", "./node_modules", wdDir]);
+  cp.spawnSync( "cp",["./webpack.config.js", wdDir]);
+  let currentPackageJSON={};
+  if( fs.existsSync( wdDir +'/package.json'))
+  {
+      currentPackageJSON=JSON.parse(fs.readFileSync(wdDir +'/package.json', 'utf8'));
+  }
+  let newPackageJSON=JSON.parse(fs.readFileSync('./package.json', 'utf8'));
+  if( event.devDependencies)
+  {
+    //console.info( JSON.stringify( packageJSON, null, 2));
+    //let packageJSON= JSON.parse(JSON.stringify(newPackageJSON));
+    newPackageJSON.devDependencies=Object.assign( newPackageJSON.devDependencies,event.devDependencies);
+    //console.info( JSON.stringify( packageJSON, null, 2));
+    //newPackageJSON=packageJSON;
+    fs.writeFileSync( wdDir +'/package.json', JSON.stringify(newPackageJSON,null, 2));
+  }
+  else {
+    cp.spawnSync( "cp",["./package.json", wdDir]);
+  }
+// console.info( "vvvvvvvvvvvvvvvvvvvvvvvvvv");
+// console.info( JSON.stringify(JSON.parse(fs.readFileSync(wdDir +'/package.json', 'utf8')),null, 2));
+// console.info( "^^^^^^^^^^^^^^^^^^^^^^^^^^");
+console.log( JSON.stringify(process.env, null, 2));
+console.log( JSON.stringify(process.argv, null, 2));
+
+  if(
+  //  fs.existsSync( wdDir +'/node_modules') ==false ||
+    JSON.stringify( currentPackageJSON)!= JSON.stringify( newPackageJSON)
+  )
+  {
+    console.info( "node node_modules/npm/bin/npm-cli.js install");
+    let p=cp.spawnSync(
+      process.argv[0],
+      // ["install"],
+      ["--version"],
+      // [wdDir +"/node_modules/npm/bin/npm-cli.js","install"],
+      {
+        cwd:wdDir,
+        shell:true,
+        env:{
+          HOME:"/tmp/wd"
         }
       }
     );
-    //var wp = spawn('pwd');
 
-    wp.stdout.on('data', function(data){
-      console.info( data );
-    });
+    console.info( "pid: " + p.pid +", status: " + p.status + ", signal: " + p.signal);
+    var out=p.stdout.toString();
+    if( out != "")
+    {
+      console.info( "[STDOUT]" + out);
+    }
+    var err=p.stderr.toString();
+    if( err !="")
+    {
+      console.error( "[STDERR]" + err);
+    }
 
-    wp.stderr.on('data', function(err){
-      console.error( err );
-    });
-
+    ls( "./");
+    ls( wdDir);
+    ls( wdDir+"/node_modules/react-select");
   }
+
+  if(
+    fs.existsSync( wdDir +'/node_modules') ==false
+  )
+  {
+    return callback("no node modules installed");
+  }
+return callback(null, "hack");
+  fs.mkdirSync(srcDir);
+  fs.appendFileSync(srcDir + '/index.js', event.script);
+  //var wp = spawn('./node_modules/.bin/webpack', ['--config', 'webpack.config.js', '--mode', 'production']);
+//  var wp = spawn('npm', ['run-script', 'build']);
+  var wp = exec(
+    'npm run-script build',
+  //  './node_modules/.bin/webpack --config webpack.config.js --mode production',
+    {
+        cwd:wdDir
+    },
+    (error, stdout, stderr) => {
+      if (error ) {
+        var msg='[ERROR]: "' + error.name + '" - ' + error.message + '\n' + stderr;
+        msg=msg.trim();
+        console.error( msg );
+        callback(msg);
+        return;
+      }
+
+      if( fs.existsSync( outFile))
+      {
+        try{
+          callback(
+            null,
+            fs.readFileSync(outFile, 'utf8')
+          );
+        }
+        catch( e)
+        {
+          callback( "could not read: " + e);
+        }
+      }
+      else {
+        callback( "No file: " + outFile);
+      }
+    }
+  );
+  //var wp = spawn('pwd');
+
+  wp.stdout.on('data', function(data){
+    console.info( data.toString() );
+  });
+
+  wp.stderr.on('data', function(err){
+    console.error( err.toString() );
+  });
+
+
 };
 
 function deleteFolderRecursive(path) {
@@ -96,3 +208,18 @@ function deleteFolderRecursive(path) {
     fs.rmdirSync(path);
   }
 };
+
+function ls( dir)
+{
+  let p=cp.spawnSync(
+    "ls",
+    ["-la", dir]
+  );
+
+  console.info( "ls -la "+ dir);
+  console.info( p.stdout.toString());
+  if( p.error)
+  {
+    console.error( "[STDERR]" + p.stderr.toString());
+  }
+}
