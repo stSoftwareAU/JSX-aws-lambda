@@ -8,7 +8,7 @@ test('check handler', () => {
   {
     fs.unlinkSync(fn);
   }
-  console.log( JSON.stringify(process.env, null, 2));
+  // console.log( JSON.stringify(process.env, null, 2));
   //const event=JSON.parse(fs.readFileSync('event.json', 'utf8'));
   let event_data={
       script: fs.readFileSync('./sample/index.js', 'utf8'),

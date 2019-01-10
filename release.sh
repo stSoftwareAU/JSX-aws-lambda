@@ -10,7 +10,8 @@ cp index.js $WORK_DIR/
 cp webpack.config.js $WORK_DIR/
 
 cd $WORK_DIR
-npm install npm@latest --save-dev
+#npm install npm@latest --save-dev
+npm install npm@latest
 npm install 
 rm -f $RELEASE_DIR/lambda.zip
 #zip $RELEASE_DIR/lambda.zip index.js package.json webpack.config.js
@@ -18,7 +19,7 @@ rm -f $RELEASE_DIR/lambda.zip
 zip $RELEASE_DIR/lambda.zip -r \
     --symlinks \
     index.js node_modules/ package.json package-lock.json webpack.config.js \
-    --exclude \*/.cache* \*/html \*.md \*LICENSE \*/jest\*
+    --exclude \*/.cache* \*/html \*/test \*.md \*LICENSE \*/jest\*
 
 ls -lh $RELEASE_DIR/lambda.zip
 

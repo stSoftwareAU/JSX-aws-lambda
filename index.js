@@ -3,6 +3,7 @@ var cp = require('child_process');
 var fs = require('fs')
 var path = require('path');
 const wdDir="/tmp/wd";
+// const os = require('os');
 
 exports.handler = (event, context, callback) => {
 
@@ -75,7 +76,7 @@ function perform(event, context, callback)
   deleteFolderRecursive( distDir);
   const outFile=distDir + "/bundle.js";
 
-  cp.spawnSync( "cp",["-a", "./node_modules", wdDir]);
+  cp.spawnSync( "cp",["-a","--no-clobber", "./node_modules", wdDir]);
   cp.spawnSync( "cp",["./webpack.config.js", wdDir]);
   let currentPackageJSON={};
   if( fs.existsSync( wdDir +'/package.json'))
@@ -98,20 +99,26 @@ function perform(event, context, callback)
 // console.info( "vvvvvvvvvvvvvvvvvvvvvvvvvv");
 // console.info( JSON.stringify(JSON.parse(fs.readFileSync(wdDir +'/package.json', 'utf8')),null, 2));
 // console.info( "^^^^^^^^^^^^^^^^^^^^^^^^^^");
-console.log( JSON.stringify(process.env, null, 2));
+// console.log( JSON.stringify(process.env, null, 2));
 console.log( JSON.stringify(process.argv, null, 2));
-
+ls( "./");
+ls( "/tmp");
+    // pwd();
   if(
   //  fs.existsSync( wdDir +'/node_modules') ==false ||
     JSON.stringify( currentPackageJSON)!= JSON.stringify( newPackageJSON)
   )
   {
-    console.info( "node node_modules/npm/bin/npm-cli.js install");
+
+    const nodeCmd=process.argv[0];
+    const npmCmd=process.cwd() + "/node_modules/npm/bin/npm-cli.js";
+    console.info( nodeCmd + " " + npmCmd + " install");
+
     let p=cp.spawnSync(
-      process.argv[0],
-      // ["install"],
-      ["--version"],
-      // [wdDir +"/node_modules/npm/bin/npm-cli.js","install"],
+      nodeCmd,
+      [npmCmd, "install", "--ignore-scripts", "--yes"],
+      // ["--version"],
+      // [process.env.HOME +"/node_modules/npm/bin/npm-cli.js","install"],
       {
         cwd:wdDir,
         shell:true,
@@ -133,7 +140,6 @@ console.log( JSON.stringify(process.argv, null, 2));
       console.error( "[STDERR]" + err);
     }
 
-    ls( "./");
     ls( wdDir);
     ls( wdDir+"/node_modules/react-select");
   }
@@ -144,14 +150,14 @@ console.log( JSON.stringify(process.argv, null, 2));
   {
     return callback("no node modules installed");
   }
-return callback(null, "hack");
+// return callback(null, "hack");
   fs.mkdirSync(srcDir);
   fs.appendFileSync(srcDir + '/index.js', event.script);
   //var wp = spawn('./node_modules/.bin/webpack', ['--config', 'webpack.config.js', '--mode', 'production']);
 //  var wp = spawn('npm', ['run-script', 'build']);
   var wp = exec(
-    'npm run-script build',
-  //  './node_modules/.bin/webpack --config webpack.config.js --mode production',
+  //  'npm run-script build',
+    './node_modules/.bin/webpack --config webpack.config.js --mode production',
     {
         cwd:wdDir
     },
@@ -223,3 +229,13 @@ function ls( dir)
     console.error( "[STDERR]" + p.stderr.toString());
   }
 }
+
+// function pwd( )
+// {
+//   let p=cp.spawnSync(
+//     "pwd"
+//   );
+//
+//   console.info( "pwd");
+//   console.info( p.stdout.toString());
+// }
