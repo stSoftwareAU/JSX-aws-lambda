@@ -1,7 +1,7 @@
 {
   "name": "lambda-webpack",
   "version": "1.0.0",
-  "description": "",
+  "description": "Run webpack as a lambda function",
   "main": "index.js",
   "scripts": {
     "build": "node_modules/.bin/webpack-cli --mode production"

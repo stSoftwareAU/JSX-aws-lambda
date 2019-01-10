@@ -198,8 +198,6 @@ function perform(event, context, callback)
   wp.stderr.on('data', function(err){
     console.error( err.toString() );
   });
-
-
 };
 
 function deleteFolderRecursive(path) {
