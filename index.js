@@ -77,6 +77,7 @@ function perform(event, context, callback)
   const outFile=distDir + "/bundle.js";
 
   cp.spawnSync( "cp",["-a","--no-clobber", "./node_modules", wdDir]);
+  cp.spawnSync( "cp",["-a","--no-clobber", "./package-lock.json", wdDir]);
   cp.spawnSync( "cp",["./webpack.config.js", wdDir]);
   let currentPackageJSON={};
   if( fs.existsSync( wdDir +'/package.json'))
@@ -100,9 +101,9 @@ function perform(event, context, callback)
 // console.info( JSON.stringify(JSON.parse(fs.readFileSync(wdDir +'/package.json', 'utf8')),null, 2));
 // console.info( "^^^^^^^^^^^^^^^^^^^^^^^^^^");
 // console.log( JSON.stringify(process.env, null, 2));
-console.log( JSON.stringify(process.argv, null, 2));
-ls( "./");
-ls( "/tmp");
+// console.log( JSON.stringify(process.argv, null, 2));
+// ls( "./");
+// ls( "/tmp");
     // pwd();
   if(
   //  fs.existsSync( wdDir +'/node_modules') ==false ||
@@ -139,9 +140,9 @@ ls( "/tmp");
     {
       console.error( "[STDERR]" + err);
     }
-
-    ls( wdDir);
-    ls( wdDir+"/node_modules/react-select");
+    //
+    // ls( wdDir);
+    // ls( wdDir+"/node_modules/react-select");
   }
 
   if(

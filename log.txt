@@ -1,3 +1,0 @@
-audited 29296 packages in 5.982s
-found 0 vulnerabilities
-
