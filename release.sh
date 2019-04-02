@@ -13,6 +13,7 @@ cd $WORK_DIR
 #npm install npm@latest --save-dev
 npm install npm@latest
 npm install 
+npm install --save-dev @babel/plugin-proposal-class-properties
 rm -f $RELEASE_DIR/lambda.zip
 #zip $RELEASE_DIR/lambda.zip index.js package.json webpack.config.js
 
