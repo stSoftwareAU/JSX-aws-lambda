@@ -196,10 +196,55 @@ function perform(event, context, callback){
                 console.log("list of dist files in " + distDir);
                 console.log(fs.readdirSync(distDir));
                 try {
-                    callback(
-                            null,
-                            fs.readFileSync(outFile, 'utf8')
-                            );
+                    const js = fs.readFileSync(outFile, 'utf8');
+                    if(event.uploadToS3 && event.project && event.version)
+                    {
+                        const bucket = "st-react";
+                        const key = event.project + "/index-" + event.version + ".js";
+                        
+                        const aws = require('aws-sdk');
+                        const s3 = new aws.S3();
+                        const params = {
+                                Bucket : bucket,
+                                Key: key,
+                                Body: zlib.gzipSync(js, 'utf8'),
+                                ContentEncoding: "gzip",
+                                ContentType: "text/javascript"
+                            };
+                            s3.putObject(params, function(err, data) {
+                              if (err){
+                                  console.log(err, err.stack);
+                                  callback(err);
+                              }
+                              else{
+                                  console.log(data);
+                                  const copyParams = {
+                                    Bucket : bucket,
+                                    CopySource: "/" + bucket + "/" + key,
+                                    Key: event.project + "/index-latest.js"
+                                  }
+                                  if(event.publicS3){
+                                      copyParams.ACL = "public-read";
+                                  }
+                                  s3.copyObject(copyParams, function(err, data){
+                                      if(err){
+                                        console.log(err, err.stack);
+                                        callback(err);
+                                      }
+                                      else{
+                                          console.log(data);
+                                          callback(null, data);
+                                      }
+                                  });
+                              }
+                            });
+                    }
+                    else{
+                        callback(
+                                null,
+                                js
+                                );
+                    }
                 } catch (e)
                 {
                     callback("ERROR: could not read: " + e);

@@ -14,6 +14,8 @@ cd $WORK_DIR
 npm install npm@latest
 npm install 
 npm install --save-dev @babel/plugin-proposal-class-properties
+npm install @babel/plugin-transform-runtime
+#npm install --save-dev css-loader style-loader
 rm -f $RELEASE_DIR/lambda.zip
 #zip $RELEASE_DIR/lambda.zip index.js package.json webpack.config.js
 
