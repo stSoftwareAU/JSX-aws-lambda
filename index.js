@@ -4,7 +4,6 @@ var fs = require('fs');
 var path = require('path');
 var zlib = require('zlib');
 const wdDir="/tmp/wd";
-// const os = require('os');
 
 exports.handler = (event, context, callback) => {
 
@@ -88,32 +87,19 @@ function perform(event, context, callback){
     let newPackageJSON=JSON.parse(fs.readFileSync('./package.json', 'utf8'));
     if( event.devDependencies)
     {
-      //console.info( JSON.stringify( packageJSON, null, 2));
-      //let packageJSON= JSON.parse(JSON.stringify(newPackageJSON));
       if(event.packageGzipped){
           newPackageJSON.devDependencies = JSON.parse(zlib.gunzipSync(new Buffer(event.devDependencies, 'base64')).toString('utf8'));
       }
       else{
         newPackageJSON.devDependencies=Object.assign( newPackageJSON.devDependencies,event.devDependencies);
       }
-      //console.info( JSON.stringify( packageJSON, null, 2));
-      //newPackageJSON=packageJSON;
       fs.writeFileSync( wdDir +'/package.json', JSON.stringify(newPackageJSON,null, 2));
     }
     else {
       cp.spawnSync( "cp",["./package.json", wdDir]);
     }
-  // console.info( "vvvvvvvvvvvvvvvvvvvvvvvvvv");
-  // console.info( JSON.stringify(JSON.parse(fs.readFileSync(wdDir +'/package.json', 'utf8')),null, 2));
-  // console.info( "^^^^^^^^^^^^^^^^^^^^^^^^^^");
-  // console.log( JSON.stringify(process.env, null, 2));
-  // console.log( JSON.stringify(process.argv, null, 2));
-  // ls( "./");
-  // ls( "/tmp");
-      // pwd();
       console.log(JSON.stringify(newPackageJSON));
     if(
-    //  fs.existsSync( wdDir +'/node_modules') ==false ||
       JSON.stringify( currentPackageJSON)!= JSON.stringify( newPackageJSON)
     )
     {
@@ -125,8 +111,6 @@ function perform(event, context, callback){
       let p=cp.spawnSync(
         nodeCmd,
         [npmCmd, "install", "--ignore-scripts", "--yes"],
-        // ["--version"],
-        // [process.env.HOME +"/node_modules/npm/bin/npm-cli.js","install"],
         {
           cwd:wdDir,
           shell:true,
@@ -147,9 +131,6 @@ function perform(event, context, callback){
       {
         console.error( "[STDERR]" + err);
       }
-      //
-      // ls( wdDir);
-      // ls( wdDir+"/node_modules/react-select");
     }
 
     if(
@@ -158,7 +139,6 @@ function perform(event, context, callback){
     {
         return callback("ERROR: no node modules installed");
     }
-  // return callback(null, "hack");
     fs.mkdirSync(srcDir);
     for(let i = 0;i < scripts.length;i++){
         const filename = scripts[i].name;
@@ -174,10 +154,7 @@ function perform(event, context, callback){
             fs.writeFileSync(fullFilename, script);
         }
     }
-    //var wp = spawn('./node_modules/.bin/webpack', ['--config', 'webpack.config.js', '--mode', 'production']);
-  //  var wp = spawn('npm', ['run-script', 'build']);
     var wp = exec(
-        //  'npm run-script build',
         './node_modules/.bin/webpack --config webpack.config.js --mode production',
         {
             cwd: wdDir
@@ -254,7 +231,6 @@ function perform(event, context, callback){
             }
         }
     );
-    //var wp = spawn('pwd');
 
     wp.stdout.on('data', function (data) {
         console.info(data.toString());
@@ -302,13 +278,3 @@ function ls( dir)
     console.error( "[STDERR]" + p.stderr.toString());
   }
 }
-
-// function pwd( )
-// {
-//   let p=cp.spawnSync(
-//     "pwd"
-//   );
-//
-//   console.info( "pwd");
-//   console.info( p.stdout.toString());
-// }
