@@ -195,24 +195,28 @@ function perform(event, context, callback){
                               }
                               else{
                                   console.log(data);
-                                  const copyParams = {
-                                    Bucket : bucket,
-                                    CopySource: "/" + bucket + "/" + key,
-                                    Key: event.project + "/index-latest.js"
-                                  }
-                                  if(event.publicS3){
-                                      copyParams.ACL = "public-read";
-                                  }
-                                  s3.copyObject(copyParams, function(err, data){
-                                      if(err){
-                                        console.log(err, err.stack);
-                                        callback(err);
-                                      }
-                                      else{
-                                          console.log(data);
-                                          callback(null, data);
-                                      }
-                                  });
+                                  data.key = key;
+                                  data.bucket = bucket;
+                                  callback(null, data);
+                                  //don't copy to latest js
+//                                  const copyParams = {
+//                                    Bucket : bucket,
+//                                    CopySource: "/" + bucket + "/" + key,
+//                                    Key: event.project + "/index-latest.js"
+//                                  }
+//                                  if(event.publicS3){
+//                                      copyParams.ACL = "public-read";
+//                                  }
+//                                  s3.copyObject(copyParams, function(err, data){
+//                                      if(err){
+//                                        console.log(err, err.stack);
+//                                        callback(err);
+//                                      }
+//                                      else{
+//                                          console.log(data);
+//                                          callback(null, data);
+//                                      }
+//                                  });
                               }
                             });
                     }
